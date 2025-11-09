@@ -6,6 +6,7 @@ tiktoken
 langchainhub
 faiss-cpu
 youtube-transcript-api
-
+langchain-text-splitters
 tf-keras
+
 
