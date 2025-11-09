@@ -8,5 +8,6 @@ faiss-cpu
 youtube-transcript-api
 langchain-text-splitters
 tf-keras
-
+langchain
+langchain_huggingface
 
