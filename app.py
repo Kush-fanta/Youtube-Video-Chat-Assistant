@@ -2,7 +2,8 @@ import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langgraph.graph import StateGraph, START, END
 from typing import Dict, Any, List
@@ -245,4 +246,5 @@ if prompt := st.chat_input("Ask a question about the video..."):
 # Show initial message if no video loaded
 if not st.session_state.current_url:
     st.info("👈 Start by loading a YouTube video from the sidebar!")
+
 
