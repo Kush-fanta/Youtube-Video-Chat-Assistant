@@ -16,7 +16,7 @@ import time
 import warnings
 warnings.filterwarnings("ignore")
 
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" 
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
@@ -91,7 +91,7 @@ def retriever(graph:YoutubeStateGraph)->YoutubeStateGraph:
 def augmentation(graph:YoutubeStateGraph)->YoutubeStateGraph:
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        google_api_key=st.secrets["GOOGLE_API_KEY"],
         temperature=0.2
         )
     context = graph["retriever"].invoke(graph["user_query"])
@@ -245,3 +245,4 @@ if prompt := st.chat_input("Ask a question about the video..."):
 # Show initial message if no video loaded
 if not st.session_state.current_url:
     st.info("👈 Start by loading a YouTube video from the sidebar!")
+
