@@ -1,10 +1,11 @@
 langchain_community
 langchain
 langchain_google_genai
-langchain
+langchain.text_splitter
 langchain_core
 tiktoken
 langchainhub
 faiss-cpu
 youtube-transcript-api
+
 tf-keras
