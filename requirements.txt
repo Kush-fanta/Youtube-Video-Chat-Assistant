@@ -11,3 +11,4 @@ tf-keras
 langchain
 langchain_huggingface
 
+sentence-transformers
