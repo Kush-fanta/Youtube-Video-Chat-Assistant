@@ -1,21 +1,28 @@
 import streamlit as st
-from langchain_google_genai import ChatGoogleGenerativeAI,GoogleGenerativeAIEmbeddings
-from langchain_core.prompts import PromptTemplate
-from langchain_community.vectorstores import FAISS
-# from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
-from langgraph.graph import StateGraph, START, END
-from typing import Dict, Any, List
-from langchain_huggingface import HuggingFaceEmbeddings
-import re
 import os
+import re
 import shutil
-from dotenv import load_dotenv
-load_dotenv()
 import time
 import warnings
+from typing import Dict, Any, List
+
+from dotenv import load_dotenv
+load_dotenv()
 warnings.filterwarnings("ignore")
+
+# LangChain / embeddings / vectorstore / chains
+from langchain.chat_models import ChatGoogleGenerativeAI
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.prompts import PromptTemplate
+from langchain.vectorstores import FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import LLMChain
+
+# YouTube transcript API
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
+
+# LangGraph (keeps same - you used it previously)
+from langgraph.graph import StateGraph, START, END
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" 
@@ -246,5 +253,6 @@ if prompt := st.chat_input("Ask a question about the video..."):
 # Show initial message if no video loaded
 if not st.session_state.current_url:
     st.info("👈 Start by loading a YouTube video from the sidebar!")
+
 
 
