@@ -1,28 +1,77 @@
-import streamlit as st
+# robust_imports.py  -- paste at top of your app
+
+# standard libs
 import os
 import re
 import shutil
-import time
 import warnings
-from typing import Dict, Any, List
-
-from dotenv import load_dotenv
-load_dotenv()
 warnings.filterwarnings("ignore")
 
-# LangChain / embeddings / vectorstore / chains
-from langchain.chat_models import ChatGoogleGenerativeAI
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.prompts import PromptTemplate
-from langchain.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import LLMChain
+# Streamlit & dotenv
+import streamlit as st
+from dotenv import load_dotenv
+load_dotenv()
 
-# YouTube transcript API
+# YouTube transcript
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 
-# LangGraph (keeps same - you used it previously)
+# LangGraph (unchanged)
 from langgraph.graph import StateGraph, START, END
+
+# LangChain imports with fallbacks for different package versions
+# ChatGoogleGenerativeAI: try common import locations used by LangChain + langchain-google-genai packages
+ChatGoogleGenerativeAI = None
+try:
+    # newer unified langchain may expose chat models here
+    from langchain.chat_models import ChatGoogleGenerativeAI
+    ChatGoogleGenerativeAI = ChatGoogleGenerativeAI
+except Exception:
+    try:
+        # historical / separate package name
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        ChatGoogleGenerativeAI = ChatGoogleGenerativeAI
+    except Exception:
+        try:
+            # alternate path some examples use
+            from langchain_google_genai.chat import ChatGoogleGenerativeAI
+            ChatGoogleGenerativeAI = ChatGoogleGenerativeAI
+        except Exception:
+            ChatGoogleGenerativeAI = None
+
+# RecursiveCharacterTextSplitter: try both langchain core and langchain-text-splitters package
+RecursiveCharacterTextSplitter = None
+try:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter
+except Exception:
+    try:
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter
+    except Exception:
+        RecursiveCharacterTextSplitter = None
+
+# Other LangChain pieces (with straightforward imports)
+try:
+    from langchain.embeddings import HuggingFaceEmbeddings
+    from langchain.vectorstores import FAISS
+    from langchain.prompts import PromptTemplate
+    from langchain.chains import LLMChain
+except Exception:
+    # fallback: older names / raise clear error later if used
+    HuggingFaceEmbeddings = None
+    FAISS = None
+    PromptTemplate = None
+    LLMChain = None
+
+# sanity checks (fail fast with clear message)
+missing = []
+if ChatGoogleGenerativeAI is None:
+    missing.append("ChatGoogleGenerativeAI (install langchain-google-genai or upgrade langchain)")
+if RecursiveCharacterTextSplitter is None:
+    missing.append("RecursiveCharacterTextSplitter (install langchain-text-splitters or upgrade langchain)")
+if missing:
+    # This will show up in Streamlit when you run and help debugging
+    st.warning("Import warnings: " + "; ".join(missing))
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" 
@@ -253,6 +302,7 @@ if prompt := st.chat_input("Ask a question about the video..."):
 # Show initial message if no video loaded
 if not st.session_state.current_url:
     st.info("👈 Start by loading a YouTube video from the sidebar!")
+
 
 
 
