@@ -145,10 +145,24 @@ def fetch_youtube_transcript(graph:YoutubeStateGraph)->YoutubeStateGraph:
             
             st.write(f"DEBUG: YouTubeTranscriptApi type: {type(YouTubeTranscriptApi)}")
             
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=["en"])
+            # Try different methods based on youtube-transcript-api version
+            try:
+                # Method 1: list() method (newer versions)
+                transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+                transcript_obj = transcript_list.find_transcript(['en'])
+                transcript_data = transcript_obj.fetch()
+            except:
+                # Method 2: get_transcript() (some versions)
+                try:
+                    transcript_data = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+                except:
+                    # Method 3: Direct call (older versions)
+                    transcript_data = YouTubeTranscriptApi().get_transcript(video_id, languages=['en'])
+            
             transcript = ""
-            for entry in transcript_list:
-                transcript+=entry["text"]+" "
+            for entry in transcript_data:
+                transcript += entry["text"] + " "
+            
             st.write(f"DEBUG: Transcript fetched, length: {len(transcript)}")
             return {"transcript":transcript}
         except TranscriptsDisabled:
@@ -156,6 +170,8 @@ def fetch_youtube_transcript(graph:YoutubeStateGraph)->YoutubeStateGraph:
             return {"transcript":""}
         except Exception as e:
             st.error(f"Error fetching transcript: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
             return {"transcript":""}
     except Exception as e:
         st.error(f"Error in fetch_youtube_transcript: {str(e)}")
