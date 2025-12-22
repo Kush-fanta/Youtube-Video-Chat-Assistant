@@ -294,7 +294,7 @@ def augmentation(graph:YoutubeStateGraph)->YoutubeStateGraph:
             raise ValueError("ChatGoogleGenerativeAI is not available")
         
         llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-flash",
             google_api_key=st.secrets["GOOGLE_API_KEY"],
             temperature=0.2
         )
@@ -470,3 +470,4 @@ if prompt := st.chat_input("Ask a question about the video..."):
 # Show initial message if no video loaded
 if not st.session_state.current_url:
     st.info("👈 Start by loading a YouTube video from the sidebar!")
+
