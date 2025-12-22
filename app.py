@@ -160,12 +160,29 @@ def fetch_youtube_transcript(graph:YoutubeStateGraph)->YoutubeStateGraph:
                     transcript_data = transcript_obj.fetch()
                     st.write("DEBUG: Method 3 successful")
             
-            # Build transcript string
+            # Build transcript string - handle both dict and object formats
             transcript = ""
             for entry in transcript_data:
-                transcript += entry["text"] + " "
+                # Try dictionary access first
+                try:
+                    transcript += entry["text"] + " "
+                except (TypeError, KeyError):
+                    # If that fails, try object attribute access
+                    try:
+                        transcript += entry.text + " "
+                    except AttributeError:
+                        # If both fail, try to convert to dict
+                        if hasattr(entry, '__dict__'):
+                            transcript += entry.__dict__.get('text', '') + " "
+                        else:
+                            st.warning(f"Unknown entry format: {type(entry)}")
             
             st.write(f"DEBUG: Transcript fetched, length: {len(transcript)}")
+            
+            if len(transcript.strip()) == 0:
+                st.error("Transcript is empty after extraction")
+                return {"transcript":""}
+            
             return {"transcript":transcript}
             
         except TranscriptsDisabled:
@@ -214,6 +231,14 @@ def create_embeddings(graph:YoutubeStateGraph)->YoutubeStateGraph:
     try:
         st.write("DEBUG: Entering create_embeddings")
         
+        chunks = graph["chunks"]
+        st.write(f"DEBUG: Processing {len(chunks)} chunks")
+        
+        # Check if chunks is empty
+        if not chunks or len(chunks) == 0:
+            st.error("No chunks to create embeddings from. Cannot proceed.")
+            raise ValueError("Empty chunks list - cannot create embeddings")
+        
         # Check if HuggingFaceEmbeddings is callable
         if HuggingFaceEmbeddings is None:
             st.error("HuggingFaceEmbeddings is None!")
@@ -225,9 +250,6 @@ def create_embeddings(graph:YoutubeStateGraph)->YoutubeStateGraph:
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
         st.write("DEBUG: Embeddings model created")
-        
-        chunks = graph["chunks"]
-        st.write(f"DEBUG: Processing {len(chunks)} chunks")
         
         VECTORSTORE_PATH = "faiss_index"
 
