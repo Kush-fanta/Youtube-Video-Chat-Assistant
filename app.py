@@ -138,33 +138,36 @@ def fetch_youtube_transcript(graph:YoutubeStateGraph)->YoutubeStateGraph:
             return {"transcript":""}
         
         try:
-            # Check if YouTubeTranscriptApi is callable
-            if YouTubeTranscriptApi is None:
-                st.error("YouTubeTranscriptApi is None!")
-                return {"transcript":""}
-            
-            st.write(f"DEBUG: YouTubeTranscriptApi type: {type(YouTubeTranscriptApi)}")
-            
-            # Try different methods based on youtube-transcript-api version
+            # Method 1: Using .fetch() with instance (recommended by official docs)
             try:
-                # Method 1: list() method (newer versions)
-                transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-                transcript_obj = transcript_list.find_transcript(['en'])
-                transcript_data = transcript_obj.fetch()
-            except:
-                # Method 2: get_transcript() (some versions)
+                st.write("DEBUG: Trying Method 1 - .fetch() with instance")
+                ytt_api = YouTubeTranscriptApi()
+                transcript_data = ytt_api.fetch(video_id)
+                st.write("DEBUG: Method 1 successful")
+            except Exception as e1:
+                st.write(f"DEBUG: Method 1 failed: {str(e1)}")
+                # Method 2: Using static .get_transcript()
                 try:
-                    transcript_data = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-                except:
-                    # Method 3: Direct call (older versions)
-                    transcript_data = YouTubeTranscriptApi().get_transcript(video_id, languages=['en'])
+                    st.write("DEBUG: Trying Method 2 - static .get_transcript()")
+                    transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+                    st.write("DEBUG: Method 2 successful")
+                except Exception as e2:
+                    st.write(f"DEBUG: Method 2 failed: {str(e2)}")
+                    # Method 3: Using list_transcripts() (newer API)
+                    st.write("DEBUG: Trying Method 3 - list_transcripts()")
+                    transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+                    transcript_obj = transcript_list.find_transcript(['en'])
+                    transcript_data = transcript_obj.fetch()
+                    st.write("DEBUG: Method 3 successful")
             
+            # Build transcript string
             transcript = ""
             for entry in transcript_data:
                 transcript += entry["text"] + " "
             
             st.write(f"DEBUG: Transcript fetched, length: {len(transcript)}")
             return {"transcript":transcript}
+            
         except TranscriptsDisabled:
             st.error("No captions available for this video.")
             return {"transcript":""}
